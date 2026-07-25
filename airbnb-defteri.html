@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Ev Defteri — Airbnb Takip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#141922;
+    --bg-soft:#1b222c;
+    --card:#212a35;
+    --card-2:#1c232d;
+    --paper:#f4efe3;
+    --ink:#f4efe3;
+    --ink-dim:#a9b2bf;
+    --line:#333f4d;
+    --gold:#c9a227;
+    --gold-soft:#e0c05f;
+    --income:#7fa88f;
+    --expense:#b5563c;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 0%, rgba(201,162,39,0.08), transparent 40%),
+      var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    padding-bottom:60px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  header{
+    padding:28px 20px 18px;
+    border-bottom:1px solid var(--line);
+    position:sticky;
+    top:0;
+    background:rgba(20,25,34,0.92);
+    backdrop-filter: blur(6px);
+    z-index:10;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--gold-soft);
+    margin:0 0 4px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:28px;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .wrap{max-width:560px;margin:0 auto;padding:0 16px;}
+
+  .summary{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:10px;
+    margin:20px auto 8px;
+  }
+  .stat{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:14px 10px;
+    text-align:center;
+  }
+  .stat .label{
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--ink-dim);
+    margin-bottom:6px;
+  }
+  .stat .value{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:15px;
+  }
+  .stat.net .value{color:var(--gold-soft);}
+  .stat.income .value{color:var(--income);}
+  .stat.expense .value{color:var(--expense);}
+
+  .month-filter{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin:14px auto 22px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--ink-dim);
+  }
+  .month-filter select{
+    background:var(--card);
+    color:var(--ink);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:8px 10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+  }
+
+  .add-btn{
+    display:block;
+    width:100%;
+    padding:14px;
+    background:var(--gold);
+    color:#1b1607;
+    border:none;
+    border-radius:10px;
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    cursor:pointer;
+    margin-bottom:22px;
+  }
+  .add-btn:active{background:var(--gold-soft);}
+
+  /* Booking ticket card */
+  .ticket{
+    background:var(--paper);
+    color:#241f14;
+    border-radius:12px;
+    margin-bottom:16px;
+    overflow:hidden;
+    box-shadow:0 8px 20px rgba(0,0,0,0.25);
+    position:relative;
+  }
+  .ticket-top{
+    padding:16px 16px 14px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:10px;
+  }
+  .guest-name{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:19px;
+    margin:0 0 4px;
+  }
+  .dates{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    color:#5c5340;
+  }
+  .nights-badge{
+    background:#241f14;
+    color:var(--gold-soft);
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:12px;
+    padding:6px 10px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+  .perforation{
+    border-top:2px dashed #cfc6ac;
+    position:relative;
+    margin:0 16px;
+  }
+  .perforation::before,.perforation::after{
+    content:'';
+    position:absolute;
+    top:-9px;
+    width:18px;height:18px;
+    background:var(--bg);
+    border-radius:50%;
+  }
+  .perforation::before{left:-25px;}
+  .perforation::after{right:-25px;}
+  .ticket-bottom{
+    padding:14px 16px 16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+  }
+  .money-row{display:flex;gap:16px;}
+  .money{font-family:'IBM Plex Mono', monospace;font-size:13px;}
+  .money .amt{font-weight:600;font-size:14.5px;display:block;}
+  .money.income .amt{color:#3f6b52;}
+  .money.expense .amt{color:#8c3f2b;}
+  .guest-count{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:#5c5340;
+  }
+  .note{
+    font-size:12px;
+    color:#5c5340;
+    padding:0 16px 14px;
+    font-style:italic;
+  }
+  .del-btn{
+    position:absolute;
+    top:10px;
+    right:10px;
+    background:none;
+    border:none;
+    color:#8c3f2b;
+    font-size:16px;
+    cursor:pointer;
+    opacity:0.55;
+    padding:4px 8px;
+  }
+
+  .empty{
+    text-align:center;
+    color:var(--ink-dim);
+    padding:40px 20px;
+    font-size:14px;
+  }
+
+  /* Modal form */
+  .overlay{
+    display:none;
+    position:fixed;inset:0;
+    background:rgba(10,13,18,0.72);
+    z-index:100;
+    align-items:flex-end;
+    justify-content:center;
+  }
+  .overlay.open{display:flex;}
+  .sheet{
+    background:var(--bg-soft);
+    width:100%;
+    max-width:560px;
+    border-radius:20px 20px 0 0;
+    padding:22px 20px 30px;
+    max-height:88vh;
+    overflow-y:auto;
+    border-top:1px solid var(--line);
+  }
+  .sheet h2{
+    font-family:'Fraunces', serif;
+    font-size:20px;
+    margin:0 0 18px;
+  }
+  .field{margin-bottom:14px;}
+  .field label{
+    display:block;
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-dim);
+    margin-bottom:6px;
+  }
+  .field input, .field textarea{
+    width:100%;
+    background:var(--card);
+    border:1px solid var(--line);
+    color:var(--ink);
+    padding:11px 12px;
+    border-radius:8px;
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+  }
+  .field textarea{resize:vertical;min-height:50px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .sheet-actions{
+    display:flex;
+    gap:10px;
+    margin-top:6px;
+  }
+  .sheet-actions button{
+    flex:1;
+    padding:13px;
+    border-radius:10px;
+    border:none;
+    font-weight:700;
+    font-size:14.5px;
+    cursor:pointer;
+  }
+  .save-btn{background:var(--gold);color:#1b1607;}
+  .cancel-btn{background:transparent;border:1px solid var(--line) !important;color:var(--ink-dim);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <p class="eyebrow">Ev Defteri</p>
+    <h1>Airbnb Gelir · Gider</h1>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="summary">
+    <div class="stat income">
+      <div class="label">Gelir</div>
+      <div class="value" id="statIncome">₺0</div>
+    </div>
+    <div class="stat expense">
+      <div class="label">Gider</div>
+      <div class="value" id="statExpense">₺0</div>
+    </div>
+    <div class="stat net">
+      <div class="label">Net</div>
+      <div class="value" id="statNet">₺0</div>
+    </div>
+  </div>
+
+  <div class="month-filter">
+    <span>Dönem:</span>
+    <select id="monthFilter"></select>
+  </div>
+
+  <button class="add-btn" onclick="openSheet()">+ Yeni Rezervasyon Ekle</button>
+
+  <div id="list"></div>
+
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <h2>Yeni Rezervasyon</h2>
+    <div class="field">
+      <label>Müşteri Adı</label>
+      <input type="text" id="fGuest" placeholder="Örn. Ahmet Y.">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Giriş Tarihi</label>
+        <input type="date" id="fCheckin">
+      </div>
+      <div class="field">
+        <label>Çıkış Tarihi</label>
+        <input type="date" id="fCheckout">
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Kişi Sayısı</label>
+        <input type="number" id="fGuests" min="1" placeholder="2">
+      </div>
+      <div class="field">
+        <label>Gece Sayısı</label>
+        <input type="number" id="fNights" placeholder="otomatik" readonly>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Gelir (₺)</label>
+        <input type="number" id="fIncome" placeholder="0">
+      </div>
+      <div class="field">
+        <label>Gider (₺)</label>
+        <input type="number" id="fExpense" placeholder="0">
+      </div>
+    </div>
+    <div class="field">
+      <label>Not (temizlik, komisyon, vergi vb.)</label>
+      <textarea id="fNote" placeholder="İsteğe bağlı"></textarea>
+    </div>
+    <div class="sheet-actions">
+      <button class="cancel-btn" onclick="closeSheet()">Vazgeç</button>
+      <button class="save-btn" onclick="saveBooking()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'ev_defteri_kayitlar_v1';
+
+  function loadBookings(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+  function saveBookings(list){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  }
+
+  let bookings = loadBookings();
+
+  const fCheckin = document.getElementById('fCheckin');
+  const fCheckout = document.getElementById('fCheckout');
+  const fNights = document.getElementById('fNights');
+
+  function computeNights(){
+    if(fCheckin.value && fCheckout.value){
+      const d1 = new Date(fCheckin.value);
+      const d2 = new Date(fCheckout.value);
+      const diff = Math.round((d2 - d1) / (1000*60*60*24));
+      fNights.value = diff > 0 ? diff : 0;
+    } else {
+      fNights.value = '';
+    }
+  }
+  fCheckin.addEventListener('change', computeNights);
+  fCheckout.addEventListener('change', computeNights);
+
+  function openSheet(){
+    document.getElementById('fGuest').value='';
+    fCheckin.value=''; fCheckout.value=''; fNights.value='';
+    document.getElementById('fGuests').value='';
+    document.getElementById('fIncome').value='';
+    document.getElementById('fExpense').value='';
+    document.getElementById('fNote').value='';
+    document.getElementById('overlay').classList.add('open');
+  }
+  function closeSheet(){
+    document.getElementById('overlay').classList.remove('open');
+  }
+
+  function saveBooking(){
+    const guest = document.getElementById('fGuest').value.trim();
+    const checkin = fCheckin.value;
+    const checkout = fCheckout.value;
+    if(!guest || !checkin || !checkout){
+      alert('Müşteri adı, giriş ve çıkış tarihi zorunlu.');
+      return;
+    }
+    const booking = {
+      id: Date.now(),
+      guest,
+      checkin,
+      checkout,
+      nights: Number(fNights.value) || 0,
+      guestCount: Number(document.getElementById('fGuests').value) || 1,
+      income: Number(document.getElementById('fIncome').value) || 0,
+      expense: Number(document.getElementById('fExpense').value) || 0,
+      note: document.getElementById('fNote').value.trim()
+    };
+    bookings.push(booking);
+    saveBookings(bookings);
+    closeSheet();
+    render();
+  }
+
+  function deleteBooking(id){
+    if(!confirm('Bu kaydı silmek istediğine emin misin?')) return;
+    bookings = bookings.filter(b => b.id !== id);
+    saveBookings(bookings);
+    render();
+  }
+
+  function fmtMoney(n){
+    return '₺' + n.toLocaleString('tr-TR');
+  }
+  function fmtDate(d){
+    const dt = new Date(d);
+    return dt.toLocaleDateString('tr-TR', {day:'2-digit', month:'short'});
+  }
+  function monthKey(dateStr){
+    return dateStr.slice(0,7); // YYYY-MM
+  }
+  function monthLabel(key){
+    const [y,m] = key.split('-');
+    const dt = new Date(Number(y), Number(m)-1, 1);
+    return dt.toLocaleDateString('tr-TR', {month:'long', year:'numeric'});
+  }
+
+  function populateMonthFilter(){
+    const select = document.getElementById('monthFilter');
+    const keys = Array.from(new Set(bookings.map(b => monthKey(b.checkin)))).sort().reverse();
+    const current = select.value;
+    select.innerHTML = '<option value="all">Tümü</option>' +
+      keys.map(k => `<option value="${k}">${monthLabel(k)}</option>`).join('');
+    if(keys.includes(current)) select.value = current;
+  }
+
+  function render(){
+    populateMonthFilter();
+    const filter = document.getElementById('monthFilter').value || 'all';
+    const filtered = bookings
+      .filter(b => filter==='all' || monthKey(b.checkin)===filter)
+      .sort((a,b) => new Date(b.checkin) - new Date(a.checkin));
+
+    let totalIncome=0, totalExpense=0;
+    filtered.forEach(b => { totalIncome += b.income; totalExpense += b.expense; });
+    document.getElementById('statIncome').textContent = fmtMoney(totalIncome);
+    document.getElementById('statExpense').textContent = fmtMoney(totalExpense);
+    document.getElementById('statNet').textContent = fmtMoney(totalIncome - totalExpense);
+
+    const list = document.getElementById('list');
+    if(filtered.length === 0){
+      list.innerHTML = '<div class="empty">Henüz kayıt yok.<br>Yeni rezervasyon ekleyerek başla.</div>';
+      return;
+    }
+    list.innerHTML = filtered.map(b => `
+      <div class="ticket">
+        <button class="del-btn" onclick="deleteBooking(${b.id})">✕</button>
+        <div class="ticket-top">
+          <div>
+            <p class="guest-name">${escapeHtml(b.guest)}</p>
+            <p class="dates">${fmtDate(b.checkin)} → ${fmtDate(b.checkout)}</p>
+          </div>
+          <div class="nights-badge">${b.nights} gece</div>
+        </div>
+        <div class="perforation"></div>
+        <div class="ticket-bottom">
+          <div class="money-row">
+            <div class="money income"><span class="amt">${fmtMoney(b.income)}</span>gelir</div>
+            <div class="money expense"><span class="amt">${fmtMoney(b.expense)}</span>gider</div>
+          </div>
+          <div class="guest-count">${b.guestCount} kişi</div>
+        </div>
+        ${b.note ? `<div class="note">${escapeHtml(b.note)}</div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  document.getElementById('monthFilter').addEventListener('change', render);
+
+  render();
+</script>
+
+</body>
+</html>
